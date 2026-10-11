@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1225">
+  <meta name="description" content="Play Snakes and Ladders online with friends in real time.">
+  <title>Snake & Ladder Online</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/socket.io/socket.io.js" defer></script>
+  <script src="/game.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="Snake and Ladder home">
+        <span class="brand-icon">🎲</span>
+        <span>SNAKE<span class="brand-accent">&amp; LADDER</span><small>CREATED BY EFE</small></span>
+      </a>
+      <div class="connection"><span id="connectionDot" class="dot"></span><span id="connectionText">Connecting…</span></div>
+    </header>
+
+    <main>
+      <section id="accessScreen" class="entry-screen">
+        <div class="hero-copy">
+          <div class="eyebrow">THE CLASSIC, NOW ONLINE</div>
+          <h1>Snake <span>&amp; Ladder.</span></h1>
+          <p>Climb ladders, dodge snakes, and race your friends to square 100.</p>
+          <div class="feature-pills"><span>🐍 Snakes</span><span>🪜 Ladders</span><span>👥 Up to 4 players</span></div>
+          <p class="creator-credit">Created by <strong>Efe</strong> 👑</p>
+        </div>
+        <div class="entry-card">
+          <div class="card-heading"><span class="heading-icon">🔐</span><div><h2>Game access</h2><p>Enter your one-time access token.</p></div></div>
+          <label for="accessName">Your player name</label>
+          <input id="accessName" maxlength="18" autocomplete="nickname" placeholder="Choose a player name">
+          <label for="accessToken">Access token</label>
+          <input id="accessToken" maxlength="48" autocomplete="off" placeholder="EFE-XXXXXXXXXX">
+          <button id="redeemTokenBtn" class="btn btn-primary">Verify token &amp; continue</button>
+          <p id="accessError" class="error-message" role="alert"></p>
+          <div class="divider"><span>NEED A TOKEN?</span></div>
+          <p class="token-help">Request your token on WhatsApp.</p>
+          <a class="btn btn-whatsapp" href="https://wa.me/2347077763639" target="_blank" rel="noopener">📲 Get token on WhatsApp</a>
+          <p class="small-note">Each token works once. Access expires after the duration assigned by Efe.</p>
+        </div>
+      </section>
+
+      <section id="entryScreen" class="entry-screen hidden">
+        <div class="hero-copy">
+          <div class="eyebrow">THE CLASSIC, NOW ONLINE</div>
+          <h1>Roll the dice.<br><span>Make your move.</span></h1>
+          <p>Climb ladders, dodge snakes, and race your friends to square 100.</p>
+          <div class="feature-pills"><span>🐍 Snakes</span><span>🪜 Ladders</span><span>👥 Up to 4 players</span></div>
+        </div>
+        <div class="entry-card">
+          <div class="card-heading"><span class="heading-icon">🎮</span><div><h2>Ready to play?</h2><p>Choose how you want to join.</p></div></div>
+          <label for="playerName">Your player name</label>
+          <input id="playerName" maxlength="18" autocomplete="nickname" placeholder="Enter your name">
+          <button id="createRoomBtn" class="btn btn-primary">＋ Create a room</button>
+          <div class="divider"><span>OR JOIN YOUR FRIEND</span></div>
+          <label for="roomCodeInput">Room code</label>
+          <input id="roomCodeInput" class="code-input" maxlength="6" autocomplete="off" placeholder="E.G. DK2026">
+          <button id="joinRoomBtn" class="btn btn-secondary">Join room <span>→</span></button>
+          <p id="entryError" class="error-message" role="alert"></p>
+        </div>
+      </section>
+
+      <section id="gameScreen" class="game-screen hidden">
+        <div class="game-heading">
+          <div><div class="eyebrow">FRIENDS GAME ROOM</div><h1>Let's play <span>🎲</span></h1></div>
+          <div class="room-badge"><span>ROOM CODE</span><strong id="roomCodeLabel">------</strong><button id="copyCodeBtn" title="Copy room code">Copy</button></div>
+        </div>
+
+        <div class="game-layout">
+          <section class="board-panel">
+            <div class="board-topline"><span>🏁 FINISH AT 100</span><span id="turnLabel">Waiting for players…</span></div>
+            <div id="board" class="board" aria-label="Snakes and ladders board"></div>
+            <div class="board-legend"><span><i class="legend-ladder"></i> Ladder</span><span><i class="legend-snake"></i> Snake</span><span><i class="legend-player"></i> Player piece</span></div>
+            <div class="move-banner" id="moveBanner">Waiting for the game to begin.</div>
+          </section>
+
+          <aside class="side-panel">
+            <section class="panel-card players-card">
+              <div class="section-title"><h2>Players</h2><span id="playerCount" class="count-badge">1/4</span></div>
+              <div id="playersList" class="players-list"></div>
+              <div id="hostControls" class="host-controls">
+                <button id="startGameBtn" class="btn btn-primary" disabled>Start game</button>
+                <button id="restartGameBtn" class="btn btn-secondary hidden">↻ New game</button>
+              </div>
+              <p id="lobbyHint" class="hint">Share the room code with a friend. At least 2 players are needed.</p>
+              <button id="rollBtn" class="btn btn-roll hidden" disabled>🎲 Roll the dice</button>
+              <div id="diceResult" class="dice-result hidden"><span>LAST ROLL</span><strong>—</strong></div>
+            </section>
+
+            <section class="panel-card chat-card">
+              <div class="section-title"><h2>Room chat</h2><span>💬</span></div>
+              <div id="chatMessages" class="chat-messages" aria-live="polite"></div>
+              <form id="chatForm" class="chat-form">
+                <input id="chatInput" maxlength="240" placeholder="Say something…" aria-label="Chat message">
+                <button aria-label="Send message" type="submit">➤</button>
+              </form>
+            </section>
+            <button id="leaveRoomBtn" class="leave-button">← Leave room</button>
+          </aside>
+        </div>
+      </section>
+    </main>
+    <footer><span>SNAKE &amp; LADDER · CREATED BY EFE</span><span>Good friends. Great rolls.</span></footer>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
