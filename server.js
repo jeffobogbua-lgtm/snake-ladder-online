@@ -103,10 +103,21 @@ app.post("/api/admin/login", (req, res) => {
   res.json({ ok: true, adminToken: token });
 });
 function requireAdmin(req, res, next) {
-  const token = String(req.headers.authorization || "").replace(/^Bearer\\s+/i, "");
-  const session = validSession("admin:" + token);
-  if (!session?.admin) return res.status(401).json({ ok: false, error: "Admin login required." });
-  next();
+const authHeader = String(req.headers.authorization || “”);
+const token = authHeader.startsWith(“Bearer “)
+? authHeader.slice(7).trim()
+: “”;
+
+const session = validSession(“admin:” + token);
+
+if (!session?.admin) {
+return res.status(401).json({
+ok: false,
+error: “Admin login required.”
+});
+}
+
+next();
 }
 app.get("/api/admin/tokens", requireAdmin, (_req, res) => {
   res.json({ ok: true, tokens: accessStore.tokens.map(({ code, createdAt, redeemBy, accessDurationMs, redeemedAt, redeemedBy, accessExpiresAt, revokedAt }) => ({ code, createdAt, redeemBy, accessDurationMs, redeemedAt, redeemedBy, accessExpiresAt, revokedAt })) });
