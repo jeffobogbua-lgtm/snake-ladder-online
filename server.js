@@ -88,7 +88,7 @@ app.post("/api/redeem", (req, res) => {
 });
 
 app.get("/api/access-status", (req, res) => {
-  const token = String(req.headers.authorization || "").replace(/^Bearer\\s+/i, "");
+  const token = String(req.headers.authorization || "").replace(/^Bearer\s+/i, "");
   const session = validSession(token);
   if (!session) return res.status(401).json({ ok: false, error: "Access expired. Redeem a new token." });
   res.json({ ok: true, name: session.name, expiresAt: session.expiresAt });
